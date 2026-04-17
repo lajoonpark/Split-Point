@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ModerationLevel {
+  G
+  PG
+  M
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  posts     Post[]
+  nodes     Node[]
+  votes     Vote[]
+}
+
+model Post {
+  id              String          @id @default(cuid())
+  title           String
+  description     String?
+  moderationLevel ModerationLevel @default(G)
+  tags            String[]
+  createdAt       DateTime        @default(now())
+  author          User            @relation(fields: [authorId], references: [id])
+  authorId        String
+  nodes           Node[]
+}
+
+model Node {
+  id        String   @id @default(cuid())
+  content   String
+  anonymous Boolean  @default(false)
+  isNsfw    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  parent    Node?    @relation("NodeChildren", fields: [parentId], references: [id])
+  parentId  String?
+  children  Node[]   @relation("NodeChildren")
+  votes     Vote[]
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  value     Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  node      Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId    String
+
+  @@unique([userId, nodeId])
+}
