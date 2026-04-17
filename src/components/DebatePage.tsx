@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { NodeTree } from "./NodeTree";
 import { computeBestPath, NodeWithScore } from "@/lib/bestPath";
@@ -42,7 +42,7 @@ export function DebatePage({ postId }: { postId: string }) {
   const [loading, setLoading] = useState(true);
   const [bestPath, setBestPath] = useState<string[]>([]);
 
-  async function loadPost() {
+  const loadPost = useCallback(async () => {
     const res = await fetch(`/api/posts/${postId}`);
     if (res.ok) {
       const data: PostData = await res.json();
@@ -50,10 +50,9 @@ export function DebatePage({ postId }: { postId: string }) {
       setBestPath(computeBestPath(buildScoreTree(data.nodes)));
     }
     setLoading(false);
-  }
+  }, [postId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { loadPost(); }, [postId]);
+  useEffect(() => { loadPost(); }, [loadPost]);
 
   if (loading) return <div className="text-center text-gray-500 py-12">Loading debate…</div>;
   if (!post) return <div className="text-center text-red-400 py-12">Debate not found.</div>;

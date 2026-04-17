@@ -19,7 +19,7 @@ const NSFW: string[] = [
 
 function containsAny(text: string, words: string[]): boolean {
   const lower = text.toLowerCase();
-  return words.some((w) => lower.includes(w));
+  return words.some((w) => new RegExp(`\\b${w}\\b`).test(lower));
 }
 
 export type ModerationResult = {
