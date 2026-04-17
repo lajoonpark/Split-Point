@@ -57,6 +57,7 @@ export function NodeTree({
     onUpdate();
   }
 
+  // Cap at 8 levels to prevent excessive horizontal scrolling on narrow screens
   const indent = Math.min(depth, 8);
 
   return (

@@ -19,7 +19,8 @@ const NSFW: string[] = [
 
 function containsAny(text: string, words: string[]): boolean {
   const lower = text.toLowerCase();
-  return words.some((w) => new RegExp(`\\b${w}\\b`).test(lower));
+  // words arrays are static compile-time constants; simple substring check avoids ReDoS
+  return words.some((w) => lower.includes(w));
 }
 
 export type ModerationResult = {
