@@ -19,8 +19,12 @@ const NSFW: string[] = [
 
 function containsAny(text: string, words: string[]): boolean {
   const lower = text.toLowerCase();
-  // words arrays are static compile-time constants; simple substring check avoids ReDoS
-  return words.some((w) => lower.includes(w));
+  // Match whole words only to avoid false positives (e.g. "bass" containing "ass").
+  // Words in these lists are short, safe strings; escaping is a no-op but kept for correctness.
+  return words.some((w) => {
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b${escaped}\\b`).test(lower);
+  });
 }
 
 export type ModerationResult = {

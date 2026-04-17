@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { NodeTree } from "./NodeTree";
 import { computeBestPath, NodeWithScore } from "@/lib/bestPath";
@@ -40,19 +40,24 @@ export function DebatePage({ postId }: { postId: string }) {
   const { data: session } = useSession();
   const [post, setPost] = useState<PostData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bestPath, setBestPath] = useState<string[]>([]);
 
   const loadPost = useCallback(async () => {
     const res = await fetch(`/api/posts/${postId}`);
     if (res.ok) {
       const data: PostData = await res.json();
       setPost(data);
-      setBestPath(computeBestPath(buildScoreTree(data.nodes)));
     }
     setLoading(false);
   }, [postId]);
 
   useEffect(() => { loadPost(); }, [loadPost]);
+
+  // Memoize score tree and best path so they only recompute when post data changes,
+  // not on every re-render triggered by session or other state.
+  const bestPath = useMemo(
+    () => (post ? computeBestPath(buildScoreTree(post.nodes)) : []),
+    [post]
+  );
 
   if (loading) return <div className="text-center text-gray-500 py-12">Loading debate…</div>;
   if (!post) return <div className="text-center text-red-400 py-12">Debate not found.</div>;

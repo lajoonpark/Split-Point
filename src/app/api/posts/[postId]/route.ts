@@ -10,7 +10,8 @@ export async function GET(
     where: { id: postId },
     include: {
       author: { select: { username: true } },
-      // Prisma does not support recursive includes, so this loads 4 levels deep.
+      // Prisma does not support recursive includes, so this loads 3 levels deep
+      // (nodes → children → children → children).
       // Deeper nesting requires a recursive SQL query or a separate flatten endpoint.
       nodes: {
         include: {
